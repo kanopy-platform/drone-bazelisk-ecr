@@ -2,10 +2,30 @@ package main
 
 import (
 	"os"
+	"reflect"
 	"testing"
 )
 
-func TestPlugin(t *testing.T) {
+func TestGetArgs(t *testing.T) {
+	tests := []struct {
+		plugin plugin
+		want   []string
+	}{
+		{
+			plugin: plugin{Target: "test"},
+			want:   []string{"run", "test"},
+		},
+	}
+
+	for _, test := range tests {
+		got := test.plugin.getArgs()
+		if !reflect.DeepEqual(test.want, got) {
+			t.Errorf("%v is not equal to %v", test.want, got)
+		}
+	}
+}
+
+func TestSetenv(t *testing.T) {
 	tests := []struct {
 		env  map[string]string
 		want plugin
@@ -42,8 +62,8 @@ func TestPlugin(t *testing.T) {
 	for _, test := range tests {
 		setEnvMap(test.env)
 
-		// check desired output
-		got, err := newPlugin()
+		got := newPlugin()
+		err := got.setenv()
 		if err != nil && !test.fail {
 			t.Errorf(err.Error())
 		}
