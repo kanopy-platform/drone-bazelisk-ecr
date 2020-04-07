@@ -1,0 +1,33 @@
+---
+kind: pipeline
+type: docker
+name: default
+
+steps:
+  - name: publish-one
+    image: drone-bazelisk-ecr
+    pull: never
+    settings:
+      target: :push_one
+      tag: one
+      repository: drone-bazelisk-ecr-example-one
+      registry:
+        from_secret: ECR_REGISTRY
+      access_key:
+        from_secret: AWS_ACCESS_KEY_ID
+      secret_key:
+        from_secret: AWS_SECRET_ACCESS_KEY
+
+  - name: publish-two
+    image: drone-bazelisk-ecr
+    pull: never
+    settings:
+      target: :push_two
+      tag: two
+      repository: drone-bazelisk-ecr-example-two
+      registry:
+        from_secret: ECR_REGISTRY
+      access_key:
+        from_secret: AWS_ACCESS_KEY_ID
+      secret_key:
+        from_secret: AWS_SECRET_ACCESS_KEY
