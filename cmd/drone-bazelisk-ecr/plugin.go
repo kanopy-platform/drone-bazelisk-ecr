@@ -16,6 +16,7 @@ type plugin struct {
 	Tag        string
 	AccessKey  string `split_words:"true"`
 	SecretKey  string `split_words:"true"`
+	Bazelrc    string
 }
 
 // plugin constructor
@@ -53,6 +54,11 @@ func (p *plugin) setenv() error {
 func (p *plugin) getArgs() []string {
 	var args []string
 
+	// append startup options
+	if p.Bazelrc != "" {
+		args = append(args, joinFlag("--bazelrc", p.Bazelrc))
+	}
+
 	// append run and target
 	args = append(args, "run", p.Target)
 
@@ -75,4 +81,8 @@ func (p *plugin) run() error {
 
 func setEnvWithPrefix(key, val string) {
 	os.Setenv(fmt.Sprintf("%s_%s", "DRONE_ECR", key), val)
+}
+
+func joinFlag(flag, value string) string {
+	return fmt.Sprintf("%s=%s", flag, value)
 }
