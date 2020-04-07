@@ -15,6 +15,10 @@ func TestGetArgs(t *testing.T) {
 			plugin: plugin{Target: "test"},
 			want:   []string{"run", "test"},
 		},
+		{
+			plugin: plugin{Target: "test", Bazelrc: ".bazelrc.custom"},
+			want:   []string{"--bazelrc=.bazelrc.custom", "run", "test"},
+		},
 	}
 
 	for _, test := range tests {
@@ -40,6 +44,7 @@ func TestSetenv(t *testing.T) {
 				"PLUGIN_REPOSITORY": "repository",
 				"PLUGIN_ACCESS_KEY": "access",
 				"PLUGIN_SECRET_KEY": "secret",
+				"PLUGIN_BAZELRC":    ".bazelrc.custom",
 			},
 			want: plugin{
 				Tag:        "tag",
@@ -48,6 +53,7 @@ func TestSetenv(t *testing.T) {
 				Repository: "repository",
 				AccessKey:  "access",
 				SecretKey:  "secret",
+				Bazelrc:    ".bazelrc.custom",
 			},
 			fail: false,
 		},
