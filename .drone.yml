@@ -21,6 +21,7 @@ steps:
       repo: quay.io/mongodb/drone-bazelisk-ecr
       tags:
         - git-${DRONE_COMMIT_SHA:0:7}
+        - latest
       username:
         from_secret: docker_username
       password:
@@ -37,6 +38,7 @@ steps:
       tags:
         - git-${DRONE_COMMIT_SHA:0:7}
         - ${DRONE_TAG}
+        - latest
       username:
         from_secret: docker_username
       password:
