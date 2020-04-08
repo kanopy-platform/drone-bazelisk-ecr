@@ -5,8 +5,7 @@ name: default
 
 trigger:
   branch:
-    #- master
-    - publish_image
+    - master
 
 steps:
   - name: test
@@ -15,7 +14,7 @@ steps:
       - go vet ./...
       - go test ./...
 
-  - name: publish
+  - name: publish_push
     image: plugins/docker
     settings:
       registry: quay.io
@@ -29,3 +28,19 @@ steps:
     when:
       event:
         - push
+
+  - name: publish_tag
+    image: plugins/docker
+    settings:
+      registry: quay.io
+      repo: quay.io/mongodb/drone-bazelisk-ecr
+      tags:
+        - git-${DRONE_COMMIT_SHA:0:7}
+        - ${DRONE_TAG}
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+    when:
+      event:
+        - tag
