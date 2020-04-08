@@ -1,1 +1,0 @@
-build --workspace_status_command=scripts/workspace_status_two.sh

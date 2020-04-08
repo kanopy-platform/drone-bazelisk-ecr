@@ -1,5 +1,17 @@
 # drone-bazelisk-ecr
 
+Drone plugin for building images with Bazel rules_docker and ECR.
+
+This plugin sets the following environment variables during builds so that they can be referenced as stamp variables in workspace status scripts.
+
+    DRONE_ECR_REGISTRY
+    DRONE_ECR_REPOSITORY
+    DRONE_ECR_TAG
+
+See the [example directory](./example) to see how this plugin interacts with your build environment.
+
+## Testing locally with `drone exec`
+
 Build Image and push to a docker registry
 ```
 make docker-build

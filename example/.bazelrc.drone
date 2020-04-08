@@ -1,0 +1,2 @@
+build --disk_cache=/cache
+build --workspace_status_command=scripts/workspace_status_drone.sh
