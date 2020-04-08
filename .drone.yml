@@ -1,0 +1,31 @@
+---
+kind: pipeline
+type: kubernetes
+name: default
+
+trigger:
+  branch:
+    #- master
+    - publish_image
+
+steps:
+  - name: test
+    image: golang:1.13
+    commands:
+      - go vet ./...
+      - go test ./...
+
+  - name: publish
+    image: plugins/docker
+    settings:
+      registry: quay.io
+      repo: quay.io/mongodb/drone-bazelisk-ecr
+      tags:
+        - git-${DRONE_COMMIT_SHA:0:7}
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+    when:
+      event:
+        - push
