@@ -32,7 +32,7 @@ RUN groupadd -g ${BAZEL_USER_ID} -r ${BAZEL_USER} \
  && chmod +x ${ECR_LOGIN_PATH}
 
 COPY --from=plugin /go/bin/drone-bazelisk-ecr /usr/local/bin/drone-bazelisk-ecr
-COPY --chown=${BAZEL_USER}:${BAZEL_USER} files/config.json ${BAZEL_USER_HOME}/.docker/config.json
+COPY --chown=bazel:bazel files/config.json ${BAZEL_USER_HOME}/.docker/config.json
 
 USER ${BAZEL_USER}
 ENTRYPOINT ["drone-bazelisk-ecr"]
