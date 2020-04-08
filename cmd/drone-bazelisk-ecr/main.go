@@ -6,15 +6,10 @@ import (
 
 func main() {
 	// get new plugin object
-	p, err := newPlugin()
-	errFatal(err)
+	p := newPlugin()
 
 	// run bazelisk
-	err = p.run()
-	errFatal(err)
-}
-
-func errFatal(err error) {
+  err := p.run()
 	if err != nil {
 		log.Fatal(err)
 	}

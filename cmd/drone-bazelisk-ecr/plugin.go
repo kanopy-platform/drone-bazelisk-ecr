@@ -16,14 +16,19 @@ type plugin struct {
 	Tag        string
 	AccessKey  string `split_words:"true"`
 	SecretKey  string `split_words:"true"`
+	Bazelrc    string
 }
 
 // plugin constructor
-func newPlugin() (plugin, error) {
-	var p plugin
-	err := envconfig.Process("plugin", &p)
+func newPlugin() plugin {
+	return plugin{}
+}
+
+// process plugin env vars
+func (p *plugin) setenv() error {
+	err := envconfig.Process("plugin", p)
 	if err != nil {
-		return plugin{}, err
+		return err
 	}
 
 	// convenience variables to be read by bazel workspace status scripts
@@ -43,12 +48,32 @@ func newPlugin() (plugin, error) {
 		os.Setenv("AWS_SECRET_ACCESS_KEY", p.SecretKey)
 	}
 
-	return p, nil
+	return nil
+}
+
+func (p *plugin) getArgs() []string {
+	var args []string
+
+	// append startup options
+	if p.Bazelrc != "" {
+		args = append(args, joinFlag("--bazelrc", p.Bazelrc))
+	}
+
+	// append run and target
+	args = append(args, "run", p.Target)
+
+	return args
 }
 
 // runs the bazel command
 func (p *plugin) run() error {
-	cmd := exec.Command("bazel", "run", p.Target)
+	err := p.setenv()
+	if err != nil {
+		return err
+	}
+
+	// exec bazel
+	cmd := exec.Command("bazel", p.getArgs()...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
@@ -56,4 +81,8 @@ func (p *plugin) run() error {
 
 func setEnvWithPrefix(key, val string) {
 	os.Setenv(fmt.Sprintf("%s_%s", "DRONE_ECR", key), val)
+}
+
+func joinFlag(flag, value string) string {
+	return fmt.Sprintf("%s=%s", flag, value)
 }

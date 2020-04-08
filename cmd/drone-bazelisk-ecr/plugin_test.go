@@ -2,10 +2,34 @@ package main
 
 import (
 	"os"
+	"reflect"
 	"testing"
 )
 
-func TestPlugin(t *testing.T) {
+func TestGetArgs(t *testing.T) {
+	tests := []struct {
+		plugin plugin
+		want   []string
+	}{
+		{
+			plugin: plugin{Target: "test"},
+			want:   []string{"run", "test"},
+		},
+		{
+			plugin: plugin{Target: "test", Bazelrc: ".bazelrc.custom"},
+			want:   []string{"--bazelrc=.bazelrc.custom", "run", "test"},
+		},
+	}
+
+	for _, test := range tests {
+		got := test.plugin.getArgs()
+		if !reflect.DeepEqual(test.want, got) {
+			t.Errorf("%v is not equal to %v", test.want, got)
+		}
+	}
+}
+
+func TestSetenv(t *testing.T) {
 	tests := []struct {
 		env  map[string]string
 		want plugin
@@ -20,6 +44,7 @@ func TestPlugin(t *testing.T) {
 				"PLUGIN_REPOSITORY": "repository",
 				"PLUGIN_ACCESS_KEY": "access",
 				"PLUGIN_SECRET_KEY": "secret",
+				"PLUGIN_BAZELRC":    ".bazelrc.custom",
 			},
 			want: plugin{
 				Tag:        "tag",
@@ -28,6 +53,7 @@ func TestPlugin(t *testing.T) {
 				Repository: "repository",
 				AccessKey:  "access",
 				SecretKey:  "secret",
+				Bazelrc:    ".bazelrc.custom",
 			},
 			fail: false,
 		},
@@ -42,8 +68,8 @@ func TestPlugin(t *testing.T) {
 	for _, test := range tests {
 		setEnvMap(test.env)
 
-		// check desired output
-		got, err := newPlugin()
+		got := newPlugin()
+		err := got.setenv()
 		if err != nil && !test.fail {
 			t.Errorf(err.Error())
 		}

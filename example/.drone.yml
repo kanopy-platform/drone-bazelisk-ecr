@@ -23,8 +23,7 @@ steps:
     pull: never
     settings:
       target: :push_two
-      tag: two
-      repository: drone-bazelisk-ecr-example-two
+      bazelrc: .bazelrc.custom
       registry:
         from_secret: ECR_REGISTRY
       access_key:
