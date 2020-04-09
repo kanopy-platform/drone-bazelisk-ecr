@@ -1,6 +1,6 @@
 .PHONY: docker-build
 docker-build:
-	docker build -t drone-bazelisk-ecr .
+	docker build -t registry.example.com/drone-bazelisk-ecr .
 
 .PHONY: test
 test:

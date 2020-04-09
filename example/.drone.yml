@@ -5,11 +5,15 @@ name: default
 
 steps:
   - name: publish-one
-    image: drone-bazelisk-ecr
-    pull: never
+    image: registry.example.com/drone-bazelisk-ecr
+    volumes:
+      - name: cache
+        path: /cache
     settings:
       target: :push_one
+      bazelrc: .bazelrc.drone
       tag: one
+      create_repository: true
       repository: drone-bazelisk-ecr-example-one
       registry:
         from_secret: ECR_REGISTRY
@@ -19,14 +23,23 @@ steps:
         from_secret: AWS_SECRET_ACCESS_KEY
 
   - name: publish-two
-    image: drone-bazelisk-ecr
-    pull: never
+    image: registry.example.com/drone-bazelisk-ecr
+    volumes:
+      - name: cache
+        path: /cache
     settings:
       target: :push_two
-      bazelrc: .bazelrc.custom
+      bazelrc: .bazelrc.drone
+      tag: two
+      create_repository: true
+      repository: drone-bazelisk-ecr-example-two
       registry:
         from_secret: ECR_REGISTRY
       access_key:
         from_secret: AWS_ACCESS_KEY_ID
       secret_key:
         from_secret: AWS_SECRET_ACCESS_KEY
+
+volumes:
+  - name: cache
+    temp: {}
