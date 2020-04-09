@@ -42,10 +42,6 @@ func (m *mockECRClient) CreateRepository(input *ecr.CreateRepositoryInput) (*ecr
 		return nil, awserr.New(ecr.ErrCodeRepositoryAlreadyExistsException, "", errors.New("CreateRepositoryRepoExists"))
 	}
 
-	if testFailure == "CreateRepositoryDefault" {
-		return nil, errors.New("CreateRepositoryDefault")
-	}
-
 	return &ecr.CreateRepositoryOutput{}, nil
 }
 
@@ -191,7 +187,7 @@ func TestCreateRepository(t *testing.T) {
 		// test for generic repo creation failure
 		{
 			p:       plugin{Registry: "0123456789.dkr.ecr.us-east-1.amazonaws.com", Repository: "repository"},
-			failure: "CreateRepositoryDefault",
+			failure: "CreateRepository",
 		},
 	}
 
