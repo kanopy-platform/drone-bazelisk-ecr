@@ -1,5 +1,5 @@
 # build drone-bazelisk-ecr plugin
-FROM golang:1.13 AS plugin
+FROM golang:1.18 AS plugin
 WORKDIR /go/src/app
 COPY . .
 RUN go get -d -v ./...

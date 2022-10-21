@@ -24,6 +24,9 @@ type plugin struct {
 	AccessKey        string `split_words:"true"`
 	SecretKey        string `split_words:"true"`
 	Bazelrc          string
+	Command          string
+	CommandArgs      string
+	TargetArgs       string
 }
 
 // plugin constructor
@@ -65,9 +68,21 @@ func (p *plugin) getArgs() []string {
 	if p.Bazelrc != "" {
 		args = append(args, joinFlag("--bazelrc", p.Bazelrc))
 	}
+	command := "run"
+	if p.Command != "" {
+		command = p.Command
+	}
 
 	// append run and target
-	args = append(args, "run", p.Target)
+	if p.CommandArgs != "" {
+		args = append(args, command, p.CommandArgs, p.Target)
+	} else {
+		args = append(args, command, p.Target)
+	}
+
+	if p.TargetArgs != "" {
+		args = append(args, "--", p.TargetArgs)
+	}
 
 	return args
 }
