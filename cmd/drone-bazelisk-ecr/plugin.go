@@ -25,8 +25,8 @@ type plugin struct {
 	SecretKey        string `split_words:"true"`
 	Bazelrc          string
 	Command          string
-	CommandArgs      string
-	TargetArgs       string
+	CommandArgs      string `split_words:"true"`
+	TargetArgs       string `split_words:"true"`
 }
 
 // plugin constructor
