@@ -58,6 +58,18 @@ func TestGetArgs(t *testing.T) {
 			plugin: plugin{Target: "test", Bazelrc: ".bazelrc.custom"},
 			want:   []string{"--bazelrc=.bazelrc.custom", "run", "test"},
 		},
+		{
+			plugin: plugin{Target: "test", Bazelrc: ".bazelrc.custom", Command: "test"},
+			want:   []string{"--bazelrc=.bazelrc.custom", "test", "test"},
+		},
+		{
+			plugin: plugin{Target: "test", Bazelrc: ".bazelrc.custom", CommandArgs: "--config=test"},
+			want:   []string{"--bazelrc=.bazelrc.custom", "run", "--config=test", "test"},
+		},
+		{
+			plugin: plugin{Target: "test", Bazelrc: ".bazelrc.custom", TargetArgs: "--var"},
+			want:   []string{"--bazelrc=.bazelrc.custom", "run", "test", "--", "--var"},
+		},
 	}
 
 	for _, test := range tests {
