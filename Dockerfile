@@ -1,12 +1,12 @@
 # build drone-bazelisk-ecr plugin
-FROM golang:1.18 AS plugin
+FROM golang:1.19 AS plugin
 WORKDIR /go/src/app
 COPY . .
 RUN go get -d -v ./...
 RUN go install -v ./...
 
 # setup bazelisk
-FROM python:3.8-slim
+FROM python:3.9-slim
 
 ENV BAZEL_USER bazel
 ENV BAZEL_USER_ID 999
@@ -26,6 +26,7 @@ RUN groupadd -g ${BAZEL_USER_ID} -r ${BAZEL_USER} \
       unzip \
       wget \
       zip \
+      libffi-dev \
  && wget -qO ${BAZELISK_PATH} https://github.com/bazelbuild/bazelisk/releases/download/${BAZELISK_VERSION}/bazelisk-linux-amd64 \
  && chmod +x ${BAZELISK_PATH} \
  && wget -qO ${ECR_LOGIN_PATH} https://amazon-ecr-credential-helper-releases.s3.us-east-2.amazonaws.com/${ECR_LOGIN_VERSION}/linux-amd64/docker-credential-ecr-login \
