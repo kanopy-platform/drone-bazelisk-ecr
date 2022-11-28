@@ -1,12 +1,12 @@
 # build drone-bazelisk-ecr plugin
-FROM golang:1.18 AS plugin
+FROM golang:1.19 AS plugin
 WORKDIR /go/src/app
 COPY . .
 RUN go get -d -v ./...
 RUN go install -v ./...
 
 # setup bazelisk
-FROM python:3.8-slim
+FROM python:3.9-slim
 
 ENV BAZEL_USER bazel
 ENV BAZEL_USER_ID 999

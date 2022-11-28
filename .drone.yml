@@ -9,7 +9,7 @@ trigger:
 
 steps:
   - name: test
-    image: golang:1.13
+    image: golang:1.19
     commands:
       - go vet ./...
       - go test ./...
