@@ -1,48 +1,94 @@
 ---
 kind: pipeline
 type: kubernetes
-name: default
+name: test
 
 trigger:
   branch:
     - master
 
+workspace:
+  path: /go/src/github.com/${DRONE_REPO}
+
+volumes:
+  - name: cache
+    temp: {}
+
 steps:
   - name: test
-    image: golang:1.19
+    image: golangci/golangci-lint:v1.51.2-alpine
+    volumes:
+      - name: cache
+        path: /go
     commands:
-      - go vet ./...
-      - go test ./...
+      - apk add make
+      - make test
 
-  - name: publish_push
-    image: plugins/docker
-    settings:
-      registry: quay.io
-      repo: quay.io/mongodb/drone-bazelisk-ecr
-      tags:
-        - git-${DRONE_COMMIT_SHA:0:7}
-        - latest
-      username:
-        from_secret: docker_username
-      password:
-        from_secret: docker_password
-    when:
-      event:
-        - push
+  - name: license-check
+    image: public.ecr.aws/kanopy/licensed-go:3.4.4
+    commands:
+      - licensed cache
+      - licensed status
 
-  - name: publish_tag
-    image: plugins/docker
+  - name: build
+    image: plugins/kaniko-ecr
+    volumes:
+      - name: cache
+        path: /go
+    pull: always
     settings:
-      registry: quay.io
-      repo: quay.io/mongodb/drone-bazelisk-ecr
-      tags:
-        - git-${DRONE_COMMIT_SHA:0:7}
-        - ${DRONE_TAG}
-        - latest
-      username:
-        from_secret: docker_username
-      password:
-        from_secret: docker_password
+      no_push: true
     when:
-      event:
-        - tag
+      event: [pull_request]
+
+---
+kind: pipeline
+name: publish-amd64
+platform:
+  arch: amd64
+
+depends_on:
+  - test
+
+trigger:
+  branch: main
+  event: [push, tag]
+
+steps:
+  - name: publish
+    image: plugins/kaniko-ecr
+    settings:
+      registry: public.ecr.aws/kanopy
+      repo: ${DRONE_REPO_NAME}
+      auto_tag: true
+      auto_tag_suffix: amd64
+      access_key:
+        from_secret: ecr_access_key
+      secret_key:
+        from_secret: ecr_secret_key
+
+---
+kind: pipeline
+name: publish-arm64
+platform:
+  arch: arm64
+
+depends_on:
+  - test
+
+trigger:
+  branch: main
+  event: [push, tag]
+
+steps:
+  - name: publish
+    image: plugins/kaniko-ecr
+    settings:
+      registry: public.ecr.aws/kanopy
+      repo: ${DRONE_REPO_NAME}
+      auto_tag: true
+      auto_tag_suffix: arm64
+      access_key:
+        from_secret: ecr_access_key
+      secret_key:
+        from_secret: ecr_secret_key
