@@ -2,6 +2,8 @@
 kind: pipeline
 type: kubernetes
 name: test
+platform:
+  arch: arm64
 
 trigger:
   branch:
@@ -38,6 +40,8 @@ steps:
     pull: always
     settings:
       no_push: true
+      build_args:
+        - ARCH=arm64
     when:
       event: [pull_request]
 
