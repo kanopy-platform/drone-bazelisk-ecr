@@ -98,21 +98,3 @@ steps:
         from_secret: ecr_access_key
       secret_key:
         from_secret: ecr_secret_key
-
----
-kind: pipeline
-name: manifest
-
-depends_on:
-  - publish-amd64
-  - publish-arm64
-
-trigger:
-  branch: main
-  event: [push, tag]
-
-steps:
-  - name: manifest
-    image: plugins/docker
-    commands:
-
