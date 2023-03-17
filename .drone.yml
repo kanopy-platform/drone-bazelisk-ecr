@@ -62,6 +62,8 @@ steps:
       repo: ${DRONE_REPO_NAME}
       auto_tag: true
       auto_tag_suffix: amd64
+      build_args:
+        - ARCH=amd64
       access_key:
         from_secret: ecr_access_key
       secret_key:
@@ -88,6 +90,8 @@ steps:
       repo: ${DRONE_REPO_NAME}
       auto_tag: true
       auto_tag_suffix: arm64
+      build_args:
+        - ARCH=arm64
       access_key:
         from_secret: ecr_access_key
       secret_key:
