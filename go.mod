@@ -1,4 +1,4 @@
-module github.com/mongodb-labs/drone-bazelisk-ecr
+module github.com/kanopy-platform/drone-bazelisk-ecr
 
 go 1.19
 
