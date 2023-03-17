@@ -64,7 +64,7 @@ platform:
 depends_on:
   - test
 trigger:
-  branch: main
+  branch: master
   event: [push, tag]
 steps:
   - name: publish
@@ -89,7 +89,7 @@ platform:
 depends_on:
   - test
 trigger:
-  branch: main
+  branch: master
   event: [push, tag]
 steps:
   - name: publish
