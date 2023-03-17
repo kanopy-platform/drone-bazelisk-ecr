@@ -1,25 +1,13 @@
 ---
 kind: pipeline
-type: kubernetes
 name: test
-
 trigger:
-  branch:
-    - master
-
+  branch: [master]
 workspace:
   path: /go/src/github.com/${DRONE_REPO}
-
-volumes:
-  - name: cache
-    temp: {}
-
 steps:
   - name: test
     image: golangci/golangci-lint:v1.51.2-alpine
-    volumes:
-      - name: cache
-        path: /go
     commands:
       - apk add make
       - make test
@@ -30,32 +18,54 @@ steps:
       - licensed cache
       - licensed status
 
+---
+kind: pipeline
+name: build-amd64
+platform:
+  arch: amd64
+trigger:
+  branch: [master]
+  event: [pull_request]
+depends_on:
+  - test
+steps:
   - name: build
     image: plugins/kaniko-ecr
-    volumes:
-      - name: cache
-        path: /go
     pull: always
     settings:
       no_push: true
       build_args:
         - ARCH=amd64
-    when:
-      event: [pull_request]
+
+---
+kind: pipeline
+name: build-arm64
+platform:
+  arch: arm64
+trigger:
+  branch: [master]
+  event: [pull_request]
+depends_on:
+  - test
+steps:
+  - name: build
+    image: plugins/kaniko-ecr
+    pull: always
+    settings:
+      no_push: true
+      build_args:
+        - ARCH=arm64
 
 ---
 kind: pipeline
 name: publish-amd64
 platform:
   arch: amd64
-
 depends_on:
   - test
-
 trigger:
   branch: main
   event: [push, tag]
-
 steps:
   - name: publish
     image: plugins/kaniko-ecr
@@ -76,14 +86,11 @@ kind: pipeline
 name: publish-arm64
 platform:
   arch: arm64
-
 depends_on:
   - test
-
 trigger:
   branch: main
   event: [push, tag]
-
 steps:
   - name: publish
     image: plugins/kaniko-ecr
