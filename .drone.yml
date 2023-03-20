@@ -70,6 +70,7 @@ steps:
   - name: publish
     image: plugins/kaniko-ecr
     settings:
+      create_repository: true
       registry: public.ecr.aws/kanopy
       repo: ${DRONE_REPO_NAME}
       auto_tag: true
@@ -95,6 +96,7 @@ steps:
   - name: publish
     image: plugins/kaniko-ecr
     settings:
+      create_repository: true
       registry: public.ecr.aws/kanopy
       repo: ${DRONE_REPO_NAME}
       auto_tag: true
