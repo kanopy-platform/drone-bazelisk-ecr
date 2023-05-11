@@ -37,6 +37,7 @@ RUN wget -qO ${BAZELISK_PATH} https://github.com/bazelbuild/bazelisk/releases/do
 
 COPY --from=plugin /go/bin/drone-bazelisk-ecr /usr/local/bin/drone-bazelisk-ecr
 COPY --chown=bazel:bazel files/config.json ${BAZEL_USER_HOME}/.docker/config.json
+COPY --chown=bazel:bazel files/gitconfig ${BAZEL_USER_HOME}/.gitconfig
 
 USER ${BAZEL_USER}
 ENTRYPOINT ["drone-bazelisk-ecr"]
