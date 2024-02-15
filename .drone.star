@@ -19,14 +19,6 @@ def commit(ctx):
     return ctx.build.commit[:7]
 
 
-def build_env(ctx, arch):
-    return {
-        "GIT_COMMIT": commit(ctx),
-        "VERSION": version(ctx),
-        "ARCH": arch,
-    }
-
-
 def new_pipeline(name, arch, **kwargs):
     pipeline = {
         "kind": "pipeline",
@@ -84,7 +76,9 @@ def pipeline_build(ctx, arch):
         arch=arch,
         steps=[
             {
-                "environment": build_env(ctx, arch),
+                "environment": {
+                    "ARCH": arch,
+                },
                 "image": "plugins/kaniko-ecr",
                 "name": "publish",
                 "pull": "always",
@@ -94,7 +88,7 @@ def pipeline_build(ctx, arch):
                     "registry": {"from_secret": "ecr_registry"},
                     "repo": ctx.repo.name,
                     "tags": [version_tag(ctx, arch)],
-                    "build_args": ["VERSION", "GIT_COMMIT", "ARCH"],
+                    "build_args": ["ARCH"],
                     "create_repository": True,
                 },
             }
