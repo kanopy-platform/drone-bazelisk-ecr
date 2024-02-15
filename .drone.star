@@ -37,11 +37,12 @@ def new_pipeline(name, arch, **kwargs):
 def pipeline_test(ctx):
     cache_volume = {"name": "cache", "temp": {}}
     cache_mount = {"name": "cache", "path": "/go"}
+    arch = "amd64"
 
     # licensed-go image only supports amd64
     return new_pipeline(
         name="test",
-        arch="amd64",
+        arch=arch,
         trigger={"branch": repo_branch(ctx)},
         volumes=[cache_volume],
         workspace={"path": "/go/src/github.com/{}".format(ctx.repo.slug)},
@@ -58,10 +59,14 @@ def pipeline_test(ctx):
                 "name": "license-check",
             },
             {
+                "environment": {"ARCH": arch},
                 "image": "plugins/kaniko-ecr",
                 "name": "build",
                 "pull": "always",
-                "settings": {"no_push": True},
+                "settings": {
+                    "no_push": True,
+                    "build_args": ["ARCH"],
+                },
                 "volumes": [cache_mount],
                 "when": {"event": ["pull_request"]},
             },
@@ -76,9 +81,7 @@ def pipeline_build(ctx, arch):
         arch=arch,
         steps=[
             {
-                "environment": {
-                    "ARCH": arch,
-                },
+                "environment": {"ARCH": arch},
                 "image": "plugins/kaniko-ecr",
                 "name": "publish",
                 "pull": "always",
