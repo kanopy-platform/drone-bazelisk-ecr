@@ -73,11 +73,19 @@ func (p *plugin) getArgs() []string {
 		command = p.Command
 	}
 
+	args = append(args, command)
+
+	// Include step name as the CI job name for EngFlow
+	drone_step_name := os.Getenv("DRONE_STEP_NAME")
+	if drone_step_name != "" {
+		args = append(args, "--bes_keywords=engflow:CiCdJobName="+drone_step_name)
+	}
+
 	// append run and target
 	if p.CommandArgs != "" {
-		args = append(args, command, p.CommandArgs, p.Target)
+		args = append(args, p.CommandArgs, p.Target)
 	} else {
-		args = append(args, command, p.Target)
+		args = append(args, p.Target)
 	}
 
 	if p.TargetArgs != "" {
