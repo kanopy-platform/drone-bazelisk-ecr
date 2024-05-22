@@ -13,6 +13,16 @@ import (
 	"github.com/aws/aws-sdk-go/service/ecr/ecriface"
 )
 
+type buildMock struct{}
+
+func newBuildMock() *buildMock {
+	return &buildMock{}
+}
+
+func (b *buildMock) StepName() string {
+	return "test"
+}
+
 type mockECRClient struct {
 	ecriface.ECRAPI
 }
@@ -73,7 +83,7 @@ func TestGetArgs(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		got := test.plugin.getArgs()
+		got := test.plugin.getArgs(newBuildMock())
 		if !reflect.DeepEqual(test.want, got) {
 			t.Errorf("%v is not equal to %v", test.want, got)
 		}
