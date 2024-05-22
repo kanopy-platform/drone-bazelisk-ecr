@@ -61,7 +61,21 @@ func (p *plugin) setenv() error {
 	return nil
 }
 
-func (p *plugin) getArgs() []string {
+type buildGetter interface {
+	StepName() string
+}
+
+type buildEnv struct{}
+
+func newBuildEnv() *buildEnv {
+	return &buildEnv{}
+}
+
+func (s *buildEnv) StepName() string {
+	return os.Getenv("DRONE_STEP_NAME")
+}
+
+func (p *plugin) getArgs(getter buildGetter) []string {
 	var args []string
 
 	// append startup options
@@ -76,7 +90,7 @@ func (p *plugin) getArgs() []string {
 	args = append(args, command)
 
 	// Include step name as the CI job name for EngFlow
-	drone_step_name := os.Getenv("DRONE_STEP_NAME")
+	drone_step_name := getter.StepName()
 	if drone_step_name != "" {
 		args = append(args, "--bes_keywords=engflow:CiCdJobName="+drone_step_name)
 	}
@@ -151,7 +165,7 @@ func (p *plugin) run() error {
 	}
 
 	// exec bazel
-	cmd := exec.Command("bazel", p.getArgs()...)
+	cmd := exec.Command("bazel", p.getArgs(newBuildEnv())...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
