@@ -19,7 +19,27 @@ func newBuildMock() *buildMock {
 	return &buildMock{}
 }
 
-func (b *buildMock) StepName() string {
+func (b *buildMock) PipelineName() string {
+	return "test"
+}
+
+func (b *buildMock) JobName() string {
+	return "test"
+}
+
+func (b *buildMock) Uri() string {
+	return "test"
+}
+
+func (s *buildMock) ScmRemote() string {
+	return "test"
+}
+
+func (s *buildMock) ScmBranch() string {
+	return "test"
+}
+
+func (s *buildMock) ScmRevision() string {
 	return "test"
 }
 
@@ -79,6 +99,21 @@ func TestGetArgs(t *testing.T) {
 		{
 			plugin: plugin{Target: "test", Bazelrc: ".bazelrc.custom", TargetArgs: "--var"},
 			want:   []string{"--bazelrc=.bazelrc.custom", "run", "test", "--", "--var"},
+		},
+		{
+			plugin: plugin{Target: "test", EngflowBesKeywords: false},
+			want:   []string{"run", "test"},
+		},
+		{
+			plugin: plugin{Target: "test", EngflowBesKeywords: true},
+			want: []string{"run",
+				"--bes_keywords=engflow:CiCdPipelineName=test",
+				"--bes_keywords=engflow:CiCdJobName=test",
+				"--bes_keywords=engflow:CiCdUri=test",
+				"--bes_keywords=engflow:BuildScmRemote=test",
+				"--bes_keywords=engflow:BuildScmBranch=test",
+				"--bes_keywords=engflow:BuildScmRevision=test",
+				"test"},
 		},
 	}
 

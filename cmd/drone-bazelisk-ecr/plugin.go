@@ -16,17 +16,18 @@ import (
 
 // plugin configuraion
 type plugin struct {
-	Target           string `required:"true"`
-	Registry         string `required:"true"`
-	CreateRepository bool   `split_words:"true"`
-	Repository       string
-	Tag              string
-	AccessKey        string `split_words:"true"`
-	SecretKey        string `split_words:"true"`
-	Bazelrc          string
-	Command          string
-	CommandArgs      string `split_words:"true"`
-	TargetArgs       string `split_words:"true"`
+	Target             string `required:"true"`
+	Registry           string `required:"true"`
+	CreateRepository   bool   `split_words:"true"`
+	Repository         string
+	Tag                string
+	AccessKey          string `split_words:"true"`
+	SecretKey          string `split_words:"true"`
+	Bazelrc            string
+	Command            string
+	CommandArgs        string `split_words:"true"`
+	EngflowBesKeywords bool
+	TargetArgs         string `split_words:"true"`
 }
 
 // plugin constructor
@@ -62,7 +63,12 @@ func (p *plugin) setenv() error {
 }
 
 type buildGetter interface {
-	StepName() string
+	PipelineName() string
+	JobName() string
+	Uri() string
+	ScmRemote() string
+	ScmBranch() string
+	ScmRevision() string
 }
 
 type buildEnv struct{}
@@ -71,8 +77,28 @@ func newBuildEnv() *buildEnv {
 	return &buildEnv{}
 }
 
-func (s *buildEnv) StepName() string {
+func (s *buildEnv) PipelineName() string {
+	return os.Getenv("DRONE_STAGE_NAME")
+}
+
+func (s *buildEnv) JobName() string {
 	return os.Getenv("DRONE_STEP_NAME")
+}
+
+func (s *buildEnv) Uri() string {
+	return os.Getenv("DRONE_BUILD_LINK")
+}
+
+func (s *buildEnv) ScmRemote() string {
+	return os.Getenv("DRONE_REPO_LINK")
+}
+
+func (s *buildEnv) ScmBranch() string {
+	return os.Getenv("DRONE_COMMIT_BRANCH")
+}
+
+func (s *buildEnv) ScmRevision() string {
+	return os.Getenv("DRONE_COMMIT")
 }
 
 func (p *plugin) getArgs(getter buildGetter) []string {
@@ -89,10 +115,16 @@ func (p *plugin) getArgs(getter buildGetter) []string {
 
 	args = append(args, command)
 
-	// Include step name as the CI job name for EngFlow
-	drone_step_name := getter.StepName()
-	if drone_step_name != "" {
-		args = append(args, "--bes_keywords=engflow:CiCdJobName="+drone_step_name)
+	// Include Drone CI info for EngFlow
+	if p.EngflowBesKeywords {
+		args = append(args,
+			"--bes_keywords=engflow:CiCdPipelineName="+getter.PipelineName(),
+			"--bes_keywords=engflow:CiCdJobName="+getter.JobName(),
+			"--bes_keywords=engflow:CiCdUri="+getter.Uri(),
+			"--bes_keywords=engflow:BuildScmRemote="+getter.ScmRemote(),
+			"--bes_keywords=engflow:BuildScmBranch="+getter.ScmBranch(),
+			"--bes_keywords=engflow:BuildScmRevision="+getter.ScmRevision(),
+		)
 	}
 
 	// append run and target
