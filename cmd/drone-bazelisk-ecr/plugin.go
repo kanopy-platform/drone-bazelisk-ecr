@@ -26,7 +26,7 @@ type plugin struct {
 	Bazelrc            string
 	Command            string
 	CommandArgs        string `split_words:"true"`
-	EngflowBesKeywords bool
+	EngflowBesKeywords bool `split_words:"true"`
 	TargetArgs         string `split_words:"true"`
 }
 
