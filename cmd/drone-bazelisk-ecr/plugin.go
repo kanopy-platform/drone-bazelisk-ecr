@@ -16,17 +16,18 @@ import (
 
 // plugin configuraion
 type plugin struct {
-	Target           string `required:"true"`
-	Registry         string `required:"true"`
-	CreateRepository bool   `split_words:"true"`
-	Repository       string
-	Tag              string
-	AccessKey        string `split_words:"true"`
-	SecretKey        string `split_words:"true"`
-	Bazelrc          string
-	Command          string
-	CommandArgs      string `split_words:"true"`
-	TargetArgs       string `split_words:"true"`
+	Target             string `required:"true"`
+	Registry           string `required:"true"`
+	CreateRepository   bool   `split_words:"true"`
+	Repository         string
+	Tag                string
+	AccessKey          string `split_words:"true"`
+	SecretKey          string `split_words:"true"`
+	Bazelrc            string
+	Command            string
+	CommandArgs        string `split_words:"true"`
+	EngflowBesKeywords bool `split_words:"true"`
+	TargetArgs         string `split_words:"true"`
 }
 
 // plugin constructor
@@ -61,7 +62,46 @@ func (p *plugin) setenv() error {
 	return nil
 }
 
-func (p *plugin) getArgs() []string {
+type buildGetter interface {
+	PipelineName() string
+	JobName() string
+	Uri() string
+	ScmRemote() string
+	ScmBranch() string
+	ScmRevision() string
+}
+
+type buildEnv struct{}
+
+func newBuildEnv() *buildEnv {
+	return &buildEnv{}
+}
+
+func (s *buildEnv) PipelineName() string {
+	return os.Getenv("DRONE_STAGE_NAME")
+}
+
+func (s *buildEnv) JobName() string {
+	return os.Getenv("DRONE_STEP_NAME")
+}
+
+func (s *buildEnv) Uri() string {
+	return os.Getenv("DRONE_BUILD_LINK")
+}
+
+func (s *buildEnv) ScmRemote() string {
+	return os.Getenv("DRONE_REPO_LINK")
+}
+
+func (s *buildEnv) ScmBranch() string {
+	return os.Getenv("DRONE_COMMIT_BRANCH")
+}
+
+func (s *buildEnv) ScmRevision() string {
+	return os.Getenv("DRONE_COMMIT")
+}
+
+func (p *plugin) getArgs(getter buildGetter) []string {
 	var args []string
 
 	// append startup options
@@ -73,11 +113,25 @@ func (p *plugin) getArgs() []string {
 		command = p.Command
 	}
 
+	args = append(args, command)
+
+	// Include Drone CI info for EngFlow
+	if p.EngflowBesKeywords {
+		args = append(args,
+			"--bes_keywords=engflow:CiCdPipelineName="+getter.PipelineName(),
+			"--bes_keywords=engflow:CiCdJobName="+getter.JobName(),
+			"--bes_keywords=engflow:CiCdUri="+getter.Uri(),
+			"--bes_keywords=engflow:BuildScmRemote="+getter.ScmRemote(),
+			"--bes_keywords=engflow:BuildScmBranch="+getter.ScmBranch(),
+			"--bes_keywords=engflow:BuildScmRevision="+getter.ScmRevision(),
+		)
+	}
+
 	// append run and target
 	if p.CommandArgs != "" {
-		args = append(args, command, p.CommandArgs, p.Target)
+		args = append(args, p.CommandArgs, p.Target)
 	} else {
-		args = append(args, command, p.Target)
+		args = append(args, p.Target)
 	}
 
 	if p.TargetArgs != "" {
@@ -143,7 +197,7 @@ func (p *plugin) run() error {
 	}
 
 	// exec bazel
-	cmd := exec.Command("bazel", p.getArgs()...)
+	cmd := exec.Command("bazel", p.getArgs(newBuildEnv())...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()

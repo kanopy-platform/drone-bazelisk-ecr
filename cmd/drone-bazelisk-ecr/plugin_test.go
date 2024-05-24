@@ -13,6 +13,36 @@ import (
 	"github.com/aws/aws-sdk-go/service/ecr/ecriface"
 )
 
+type buildMock struct{}
+
+func newBuildMock() *buildMock {
+	return &buildMock{}
+}
+
+func (b *buildMock) PipelineName() string {
+	return "test"
+}
+
+func (b *buildMock) JobName() string {
+	return "test"
+}
+
+func (b *buildMock) Uri() string {
+	return "test"
+}
+
+func (s *buildMock) ScmRemote() string {
+	return "test"
+}
+
+func (s *buildMock) ScmBranch() string {
+	return "test"
+}
+
+func (s *buildMock) ScmRevision() string {
+	return "test"
+}
+
 type mockECRClient struct {
 	ecriface.ECRAPI
 }
@@ -70,10 +100,25 @@ func TestGetArgs(t *testing.T) {
 			plugin: plugin{Target: "test", Bazelrc: ".bazelrc.custom", TargetArgs: "--var"},
 			want:   []string{"--bazelrc=.bazelrc.custom", "run", "test", "--", "--var"},
 		},
+		{
+			plugin: plugin{Target: "test", EngflowBesKeywords: false},
+			want:   []string{"run", "test"},
+		},
+		{
+			plugin: plugin{Target: "test", EngflowBesKeywords: true},
+			want: []string{"run",
+				"--bes_keywords=engflow:CiCdPipelineName=test",
+				"--bes_keywords=engflow:CiCdJobName=test",
+				"--bes_keywords=engflow:CiCdUri=test",
+				"--bes_keywords=engflow:BuildScmRemote=test",
+				"--bes_keywords=engflow:BuildScmBranch=test",
+				"--bes_keywords=engflow:BuildScmRevision=test",
+				"test"},
+		},
 	}
 
 	for _, test := range tests {
-		got := test.plugin.getArgs()
+		got := test.plugin.getArgs(newBuildMock())
 		if !reflect.DeepEqual(test.want, got) {
 			t.Errorf("%v is not equal to %v", test.want, got)
 		}
