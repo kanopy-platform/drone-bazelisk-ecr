@@ -28,7 +28,8 @@ RUN apt-get update && apt-get install -y \
       git \
       unzip \
       wget \
-      zip
+      zip \
+      libxml2
 
 RUN wget -qO ${BAZELISK_PATH} https://github.com/bazelbuild/bazelisk/releases/download/${BAZELISK_VERSION}/bazelisk-linux-${ARCH} \
  && chmod +x ${BAZELISK_PATH} \
